@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "web-search": {
+      "url": "http://your-hostname:8000/mcp"
+    }
+  }
+}
+
