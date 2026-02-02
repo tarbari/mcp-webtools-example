@@ -1,4 +1,5 @@
 import asyncio
+import os
 import socket
 import time
 from dataclasses import dataclass
@@ -27,18 +28,35 @@ MAX_REDIRECTS = 5
 
 BLOCK_PRIVATE_NETS = True
 
+
+def _split_env_list(value: str) -> list[str]:
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
+def _load_allowed_entries(env_key: str) -> list[str]:
+    value = os.getenv(env_key, "")
+    return _split_env_list(value) if value else []
+
+
+DEFAULT_ALLOWED_HOSTS = [
+    "localhost:*",
+    "127.0.0.1:*",
+]
+
+DEFAULT_ALLOWED_ORIGINS = [
+    "http://localhost:*",
+    "http://127.0.0.1:*",
+]
+
+allowed_hosts = DEFAULT_ALLOWED_HOSTS + _load_allowed_entries("MCP_ALLOWED_HOSTS")
+allowed_origins = DEFAULT_ALLOWED_ORIGINS + _load_allowed_entries("MCP_ALLOWED_ORIGINS")
+
 mcp = FastMCP(
     "Web Tools",
     json_response=True,
     transport_security=TransportSecuritySettings(
-        allowed_hosts=[
-            "localhost:*",
-            "127.0.0.1:*",
-        ],
-        allowed_origins=[
-            "http://localhost:*",
-            "http://127.0.0.1:*",
-        ],
+        allowed_hosts=allowed_hosts,
+        allowed_origins=allowed_origins,
     ),
 )
 
