@@ -1,16 +1,57 @@
 # Web Search Tool for AI
 
-Build the webtools-mcp docker image in the webtools_server directory.
-Run docker compose up -d.
+Build the `webtools-mcp` Docker image in `webtools_server/`, then start the stack:
 
-Remember to make sure the docker image name matches the one in the compose file.
+```sh
+docker build -t webtools-mcp:latest webtools_server
+docker compose up -d
+```
 
-## TODO
+Ensure the image name matches `docker-compose.yaml`.
 
-Make the python project more maintainable. Prolly wanna add build to the docker
-compose. 
+## Local setup (uv)
 
-The current design is so it's easier to upload to portainer.
+Sync the environment:
+
+```sh
+uv sync
+```
+
+Run the server:
+
+```sh
+uv run webtools_server/server.py
+```
+
+Run tests:
+
+```sh
+uv run test
+```
+
+Generate HTML test report:
+
+```sh
+uv run test-html
+```
+
+Generate HTML coverage report:
+
+```sh
+uv run coverage
+```
+
+Regenerate the requirements report (for Docker/ops workflows):
+
+```sh
+uv export --format requirements.txt --no-hashes --output-file webtools_server/requirements.txt
+```
+
+## Notes
+
+The current design favors simple image uploads to Portainer.
+Consider adding a build stage to `docker-compose.yaml` if you want Compose to
+build the image locally as part of `docker compose up`.
 
 ## AI usage disclaimer
 

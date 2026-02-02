@@ -1,0 +1,46 @@
+## Tooling
+.aider*
+.env
+.env.*
+.python-version
+
+## Virtual environments
+.venv/
+venv/
+
+## Python caches
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+## Build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+
+## Test/coverage caches
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+test-reports/
+
+## Type checker / linter caches
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.pytype/
+
+## IDE/editor
+.idea/
+.vscode/
+*.swp
+
+## OS
+.DS_Store
