@@ -149,6 +149,11 @@ uv export --format requirements.txt --no-hashes --output-file webtools_server/re
 - Compose also starts `searxng` on localhost:8080.
 - MCP config lives in `mcp.json` at repo root.
 
+## Git commit style
+- Use Conventional Commits for commit messages.
+- Format: `type(scope): summary` or `type: summary`.
+- Examples: `feat: add fetch_url robots cache`, `test: add web_search cases`.
+
 ## Test structure conventions
 - Keep tests in `tests/` at repo root.
 - Name files `test_*.py` and test classes `Test*`.
