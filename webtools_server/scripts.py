@@ -1,3 +1,5 @@
+"""Command entrypoints for tests and reports."""
+
 import pathlib
 import sys
 import unittest
