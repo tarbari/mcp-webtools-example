@@ -51,6 +51,18 @@ Regenerate the requirements report (for Docker/ops workflows):
 uv export --format requirements.txt --no-hashes --output-file webtools_server/requirements.txt
 ```
 
+## Transport allowlist
+
+Default allowed hosts and origins include localhost and 127.0.0.1. You can
+append additional entries via environment variables (comma-separated):
+
+```sh
+MCP_ALLOWED_HOSTS="your.host:port"
+MCP_ALLOWED_ORIGINS="http://your.host:port"
+```
+
+\* is a wild card for port.
+
 ## Notes
 
 The current design favors simple image uploads to Portainer.
