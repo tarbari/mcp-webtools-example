@@ -1,3 +1,7 @@
+> [!WARNING]  
+> I have not tried running this version of the codebase. It is
+> highly likely that it won't work as intended.
+
 # Web Search Tool for AI
 
 Build the `webtools-mcp` Docker image in `webtools_server/`, then start the stack:
