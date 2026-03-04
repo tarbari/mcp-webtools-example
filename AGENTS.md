@@ -3,9 +3,12 @@
 This file orients agentic coding tools to the conventions and workflows in this repository.
 
 ## Repository overview
-- Root contains Docker and MCP config plus tests.
+- Root contains Docker, Compose, and MCP config plus tests.
 - Primary service lives in `webtools_server/`.
-- Single Python entrypoint: `webtools_server/server.py`.
+- Entry point: `webtools_server/server.py` (thin runner — imports `app.py`).
+- `webtools_server/app.py` creates the MCP instance and Starlette app.
+- Tools live in `webtools_server/tools/` — one module per tool, auto-registered.
+- Shared modules: `config.py` (constants), `security.py` (URL validation), `robots.py` (robots.txt cache), `helpers.py` (error responses).
 - Docker image name expected by compose: `webtools-mcp:latest`.
 - Python deps are managed with uv at repo root.
 
@@ -30,6 +33,10 @@ Run from repo root:
 ```sh
 docker build -t webtools-mcp:latest .
 ```
+
+### Adding a new tool
+Create `webtools_server/tools/my_tool.py`, define functions with `@mcp.tool()`.
+The auto-discovery in `tools/__init__.py` will import and register it automatically.
 
 ### Docker compose
 Run from repo root:

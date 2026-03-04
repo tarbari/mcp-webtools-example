@@ -12,8 +12,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY webtools_server/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY webtools_server/server.py .
+COPY webtools_server/ webtools_server/
 
 EXPOSE 8000
 
-CMD ["python", "server.py"]
+CMD ["python", "webtools_server/server.py"]

@@ -2,7 +2,7 @@ import unittest
 from typing import Any, Dict, Optional
 from unittest.mock import patch
 
-import webtools_server.server as server
+import webtools_server.tools.web_search as web_search_module
 
 
 class FakeSearchResponse:
@@ -43,8 +43,8 @@ class TestWebSearch(unittest.IsolatedAsyncioTestCase):
         response = FakeSearchResponse(payload)
         client = FakeSearchClient(response)
 
-        with patch("webtools_server.server.httpx.AsyncClient", return_value=client):
-            result = await server.web_search("example", num_results=50, language="en")
+        with patch("webtools_server.tools.web_search.httpx.AsyncClient", return_value=client):
+            result = await web_search_module.web_search("example", num_results=50, language="en")
 
         self.assertEqual(len(result["results"]), 10)
         self.assertEqual(result["results"][0]["title"], "Title 0")
@@ -56,7 +56,7 @@ class TestWebSearch(unittest.IsolatedAsyncioTestCase):
         response = FakeSearchResponse(payload)
         client = FakeSearchClient(response)
 
-        with patch("webtools_server.server.httpx.AsyncClient", return_value=client):
-            result = await server.web_search("example", num_results=0)
+        with patch("webtools_server.tools.web_search.httpx.AsyncClient", return_value=client):
+            result = await web_search_module.web_search("example", num_results=0)
 
         self.assertEqual(len(result["results"]), 1)

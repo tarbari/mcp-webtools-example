@@ -3,7 +3,8 @@ import unittest
 from typing import AsyncIterator, Dict, Optional
 from unittest.mock import patch
 
-import webtools_server.server as server
+import webtools_server.security as security
+import webtools_server.tools.fetch_pdf as fetch_pdf_module
 
 
 class FakeStreamResponse:
@@ -56,16 +57,16 @@ class FakeAsyncClient:
 
 class TestFetchPdf(unittest.IsolatedAsyncioTestCase):
     async def test_invalid_url_returns_error(self) -> None:
-        result = await server.fetch_pdf("ftp://example.com/file.pdf")
+        result = await fetch_pdf_module.fetch_pdf("ftp://example.com/file.pdf")
         self.assertIn("error", result)
         self.assertEqual(result["error"]["type"], "invalid_url")
 
     async def test_blocked_hostname_returns_error(self) -> None:
         with patch(
-            "webtools_server.server._validate_pdf_url",
+            "webtools_server.tools.fetch_pdf._validate_pdf_url",
             side_effect=ValueError("Blocked hostname"),
         ):
-            result = await server.fetch_pdf("http://localhost/file.pdf")
+            result = await fetch_pdf_module.fetch_pdf("http://localhost/file.pdf")
         self.assertIn("error", result)
         # When _validate_pdf_url fails, it returns invalid_url error
         self.assertEqual(result["error"]["type"], "invalid_url")
@@ -74,18 +75,18 @@ class TestFetchPdf(unittest.IsolatedAsyncioTestCase):
     async def test_unsupported_content_type(self) -> None:
         headers = {"content-type": "text/html"}
         responses = [FakeStreamResponse(200, headers=headers)]
-        with patch("webtools_server.server._validate_pdf_url"):
+        with patch("webtools_server.tools.fetch_pdf._validate_pdf_url"):
             with patch(
-                "webtools_server.server.httpx.AsyncClient",
+                "webtools_server.tools.fetch_pdf.httpx.AsyncClient",
                 return_value=FakeAsyncClient(responses),
             ):
-                result = await server.fetch_pdf("http://example.com/file.pdf")
+                result = await fetch_pdf_module.fetch_pdf("http://example.com/file.pdf")
         self.assertIn("error", result)
         self.assertEqual(result["error"]["type"], "unsupported_content_type")
 
     async def test_pdf_password_protected(self) -> None:
         headers = {"content-type": "application/pdf"}
-        
+
         class FakePdfReader:
             def __init__(self, data):
                 raise Exception("PDF is encrypted")
@@ -95,20 +96,20 @@ class TestFetchPdf(unittest.IsolatedAsyncioTestCase):
             errors=types.SimpleNamespace(PdfReadError=Exception),
         )
         responses = [FakeStreamResponse(200, headers=headers, body=b"%PDF-1.4")]
-        
-        with patch("webtools_server.server._validate_pdf_url"):
+
+        with patch("webtools_server.tools.fetch_pdf._validate_pdf_url"):
             with patch(
-                "webtools_server.server.httpx.AsyncClient",
+                "webtools_server.tools.fetch_pdf.httpx.AsyncClient",
                 return_value=FakeAsyncClient(responses),
             ):
                 with patch.dict("sys.modules", {"pypdf": fake_pypdf}):
-                    result = await server.fetch_pdf("http://example.com/file.pdf")
+                    result = await fetch_pdf_module.fetch_pdf("http://example.com/file.pdf")
         self.assertIn("error", result)
         self.assertEqual(result["error"]["type"], "pdf_password_protected")
 
     async def test_pdf_parse_error(self) -> None:
         headers = {"content-type": "application/pdf"}
-        
+
         class FakePdfReader:
             def __init__(self, data):
                 raise Exception("Invalid PDF format")
@@ -118,20 +119,20 @@ class TestFetchPdf(unittest.IsolatedAsyncioTestCase):
             errors=types.SimpleNamespace(PdfReadError=Exception),
         )
         responses = [FakeStreamResponse(200, headers=headers, body=b"not a pdf")]
-        
-        with patch("webtools_server.server._validate_pdf_url"):
+
+        with patch("webtools_server.tools.fetch_pdf._validate_pdf_url"):
             with patch(
-                "webtools_server.server.httpx.AsyncClient",
+                "webtools_server.tools.fetch_pdf.httpx.AsyncClient",
                 return_value=FakeAsyncClient(responses),
             ):
                 with patch.dict("sys.modules", {"pypdf": fake_pypdf}):
-                    result = await server.fetch_pdf("http://example.com/file.pdf")
+                    result = await fetch_pdf_module.fetch_pdf("http://example.com/file.pdf")
         self.assertIn("error", result)
         self.assertEqual(result["error"]["type"], "pdf_parse_error")
 
     async def test_success_pdf_extracts_text(self) -> None:
         headers = {"content-type": "application/pdf"}
-        
+
         class FakePage:
             def extract_text(self):
                 return "Extracted text from page 1"
@@ -145,17 +146,17 @@ class TestFetchPdf(unittest.IsolatedAsyncioTestCase):
             PdfReader=FakePdfReader,
             errors=types.SimpleNamespace(PdfReadError=Exception),
         )
-        
+
         body = b"%PDF-1.4 test content"
         responses = [FakeStreamResponse(200, headers=headers, body=body)]
-        
-        with patch("webtools_server.server._validate_pdf_url"):
+
+        with patch("webtools_server.tools.fetch_pdf._validate_pdf_url"):
             with patch(
-                "webtools_server.server.httpx.AsyncClient",
+                "webtools_server.tools.fetch_pdf.httpx.AsyncClient",
                 return_value=FakeAsyncClient(responses),
             ):
                 with patch.dict("sys.modules", {"pypdf": fake_pypdf}):
-                    result = await server.fetch_pdf("http://example.com/file.pdf")
+                    result = await fetch_pdf_module.fetch_pdf("http://example.com/file.pdf")
         self.assertNotIn("error", result)
         self.assertEqual(result["status_code"], 200)
         self.assertEqual(result["content_type"], "application/pdf")
@@ -166,7 +167,7 @@ class TestFetchPdf(unittest.IsolatedAsyncioTestCase):
 
     async def test_success_pdf_with_metadata(self) -> None:
         headers = {"content-type": "application/pdf"}
-        
+
         class FakePage:
             def extract_text(self):
                 return "Extracted text"
@@ -184,17 +185,17 @@ class TestFetchPdf(unittest.IsolatedAsyncioTestCase):
             PdfReader=FakePdfReader,
             errors=types.SimpleNamespace(PdfReadError=Exception),
         )
-        
+
         body = b"%PDF-1.4 test content"
         responses = [FakeStreamResponse(200, headers=headers, body=body)]
-        
-        with patch("webtools_server.server._validate_pdf_url"):
+
+        with patch("webtools_server.tools.fetch_pdf._validate_pdf_url"):
             with patch(
-                "webtools_server.server.httpx.AsyncClient",
+                "webtools_server.tools.fetch_pdf.httpx.AsyncClient",
                 return_value=FakeAsyncClient(responses),
             ):
                 with patch.dict("sys.modules", {"pypdf": fake_pypdf}):
-                    result = await server.fetch_pdf("http://example.com/file.pdf")
+                    result = await fetch_pdf_module.fetch_pdf("http://example.com/file.pdf")
         self.assertNotIn("error", result)
         self.assertEqual(result["metadata"]["title"], "Test PDF")
         self.assertEqual(result["metadata"]["author"], "John Doe")
@@ -202,7 +203,7 @@ class TestFetchPdf(unittest.IsolatedAsyncioTestCase):
     async def test_redirect_follows_location(self) -> None:
         headers1 = {"location": "http://example.com/file2.pdf"}
         headers2 = {"content-type": "application/pdf"}
-        
+
         class FakePage:
             def extract_text(self):
                 return "Text from final PDF"
@@ -216,37 +217,37 @@ class TestFetchPdf(unittest.IsolatedAsyncioTestCase):
             PdfReader=FakePdfReader,
             errors=types.SimpleNamespace(PdfReadError=Exception),
         )
-        
+
         responses = [
             FakeStreamResponse(301, headers=headers1),
             FakeStreamResponse(200, headers=headers2, body=b"%PDF-1.4"),
         ]
-        
-        with patch("webtools_server.server._validate_pdf_url"):
+
+        with patch("webtools_server.tools.fetch_pdf._validate_pdf_url"):
             with patch(
-                "webtools_server.server.httpx.AsyncClient",
+                "webtools_server.tools.fetch_pdf.httpx.AsyncClient",
                 return_value=FakeAsyncClient(responses),
             ):
                 with patch.dict("sys.modules", {"pypdf": fake_pypdf}):
-                    result = await server.fetch_pdf("http://example.com/file.pdf")
+                    result = await fetch_pdf_module.fetch_pdf("http://example.com/file.pdf")
         self.assertNotIn("error", result)
         self.assertEqual(result["final_url"], "http://example.com/file2.pdf")
 
     async def test_redirect_blocked_returns_error(self) -> None:
         headers1 = {"location": "http://localhost/redirected"}
-        
+
         responses = [FakeStreamResponse(301, headers=headers1)]
-        
-        with patch("webtools_server.server._validate_pdf_url") as mock_validate:
+
+        with patch("webtools_server.tools.fetch_pdf._validate_pdf_url") as mock_validate:
             mock_validate.side_effect = lambda url: (
                 _ for _ in ()
             ).throw(ValueError("Blocked hostname")) if "localhost" in url else None
-            
+
             with patch(
-                "webtools_server.server.httpx.AsyncClient",
+                "webtools_server.tools.fetch_pdf.httpx.AsyncClient",
                 return_value=FakeAsyncClient(responses),
             ):
-                result = await server.fetch_pdf("http://example.com/file.pdf")
+                result = await fetch_pdf_module.fetch_pdf("http://example.com/file.pdf")
         self.assertIn("error", result)
         self.assertEqual(result["error"]["type"], "blocked")
 
@@ -254,17 +255,17 @@ class TestFetchPdf(unittest.IsolatedAsyncioTestCase):
 class TestValidationHelpers(unittest.TestCase):
     def test_validate_pdf_url_allows_public_host(self) -> None:
         with patch(
-            "webtools_server.server._hostname_points_to_blocked_ip", return_value=False
+            "webtools_server.security._hostname_points_to_blocked_ip", return_value=False
         ):
-            server._validate_pdf_url("http://example.com/file.pdf")
+            security._validate_pdf_url("http://example.com/file.pdf")
 
     def test_validate_pdf_url_blocks_localhost(self) -> None:
         with self.assertRaises(ValueError):
-            server._validate_pdf_url("http://localhost/file.pdf")
+            security._validate_pdf_url("http://localhost/file.pdf")
 
     def test_validate_pdf_url_requires_hostname(self) -> None:
         with self.assertRaises(ValueError):
-            server._validate_pdf_url("http:///no-host/file.pdf")
+            security._validate_pdf_url("http:///no-host/file.pdf")
 
 
 if __name__ == "__main__":
