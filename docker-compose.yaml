@@ -17,6 +17,7 @@ services:
       - searxng-data:/etc/searxng
 
   webtools-mcp:
+    build: .
     image: webtools-mcp:latest
     container_name: webtools-mcp
     restart: unless-stopped

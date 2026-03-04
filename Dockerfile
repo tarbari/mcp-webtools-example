@@ -9,12 +9,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxml2 libxslt1.1 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+COPY webtools_server/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY server.py .
+COPY webtools_server/server.py .
 
 EXPOSE 8000
 
 CMD ["python", "server.py"]
-
