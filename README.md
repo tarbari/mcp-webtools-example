@@ -1,9 +1,9 @@
 # Web Search Tool for AI
 
-Build the `webtools-mcp` Docker image in `webtools_server/`, then start the stack:
+Build the `webtools-mcp` Docker image, then start the stack:
 
 ```sh
-docker build -t webtools-mcp:latest webtools_server
+docker build -t webtools-mcp:latest .
 docker compose up -d
 ```
 
@@ -62,8 +62,8 @@ MCP_ALLOWED_ORIGINS="http://your.host:port"
 ## Notes
 
 The current design favors simple image uploads to Portainer.
-Consider adding a build stage to `docker-compose.yaml` if you want Compose to
-build the image locally as part of `docker compose up`.
+`docker-compose.yaml` includes a build stage so Compose can build the image
+locally as part of `docker compose up`.
 
 ## AI usage disclaimer
 

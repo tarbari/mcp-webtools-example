@@ -25,7 +25,7 @@ uv run webtools_server/server.py
 ```
 
 ### Docker build (recommended)
-Run from `webtools_server/`:
+Run from repo root:
 
 ```sh
 docker build -t webtools-mcp:latest .
