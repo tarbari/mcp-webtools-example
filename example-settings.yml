@@ -1,0 +1,40 @@
+# Inherit all built-in defaults for unmentioned parameters
+use_default_settings: true
+
+server:
+  secret_key: "some-super-secret-key"
+  limiter: false            # Disables bot detection/rate limiting for local API calls
+  image_proxy: true         # Proxies image results through SearXNG to prevent broken media links
+
+search:
+  safe_search: 0            # 0: Off, 1: Moderate, 2: Strict
+  autocomplete: ""          # Disables autocomplete to reduce unnecessary overhead
+  default_lang: "en"        # Preferred default language
+  formats:
+    - html
+    - json                 # Enables JSON API access required for LLM / MCP tools
+
+outgoing:
+  request_timeout: 3.0      # Timeout in seconds per search engine (prevents slow LLM waits)
+  max_request_timeout: 10.0 # Maximum total request lifecycle timeout
+
+engines:
+  - name: google
+    engine: google
+    shortcut: g
+    disabled: false
+
+  - name: duckduckgo
+    engine: duckduckgo
+    shortcut: ddg
+    disabled: false
+
+  - name: wikipedia
+    engine: wikipedia
+    shortcut: wp
+    disabled: false
+
+  - name: github
+    engine: github
+    shortcut: gh
+    disabled: false

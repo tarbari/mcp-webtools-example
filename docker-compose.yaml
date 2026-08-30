@@ -8,13 +8,8 @@ services:
     environment:
       BASE_URL: "http://localhost:8080/"
       INSTANCE_NAME: "searxng-local"
-      SEARXNG_SETTINGS: |
-        search:
-          formats:
-            - html
-            - json
     volumes:
-      - searxng-data:/etc/searxng
+      - /opt/searxng-config:/etc/searxng:rw
 
   webtools-mcp:
     image: webtools-mcp:latest
@@ -24,7 +19,4 @@ services:
       - searxng
     ports:
       - "0.0.0.0:8000:8000"
-
-volumes:
-  searxng-data:
 

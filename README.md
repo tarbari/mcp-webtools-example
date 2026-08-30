@@ -5,6 +5,10 @@ Run docker compose up -d.
 
 Remember to make sure the docker image name matches the one in the compose file.
 
+Create `/opt/searxng-config/settings.yml` or copy the example. Just remember to
+change the secret key. Make sure the permission for the directory is 755 and
+the settings file is 644.
+
 ## TODO
 
 Make the python project more maintainable. Prolly wanna add build to the docker
